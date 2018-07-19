@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <jmxConfigurator/>
+
+    <if condition='isNull("gitHash")'>
+        <then><property name="gitHash" value="undefined" /></then>
+    </if>
+
+    <if condition='isNull("serviceName")'>
+        <then><property name="serviceName" value="undefined" /></then>
+    </if>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <timestamp>ts</timestamp>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <timestamp>ts</timestamp>
+            </fieldNames>
+        </encoder>
+        <syslogHost>rsyslog-service</syslogHost>
+        <port>10514</port>
+        <facility>USER</facility>
+        <suffixPattern>[%thread] %logger %msg %marker</suffixPattern>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="SYSLOG" />
+    </root>
+
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="STDOUT" />
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+</configuration>
