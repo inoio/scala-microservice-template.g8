@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+    <suppress>
+        <notes><![CDATA[
+            False positive: akka-http-prometheus is not akka:akka
+            ]]>
+        </notes>
+        <gav regex="true">^fr\.davit:akka-http-prometheus_2\.12:.*$</gav>
+        <cpe>cpe:/a:akka:akka</cpe>
+    </suppress>
+</suppressions>
