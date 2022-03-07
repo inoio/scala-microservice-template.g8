@@ -3,6 +3,7 @@ boot/
 .sbt/
 .idea
 *.iml
+.bsp/
 lib_managed/
 src_managed/
 project/plugins/project/
