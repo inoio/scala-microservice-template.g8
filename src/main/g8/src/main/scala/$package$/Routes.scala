@@ -1,5 +1,6 @@
 package $package$
 
+import java.util.concurrent.atomic.AtomicBoolean
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.{pathPrefix, _}
@@ -8,22 +9,22 @@ import akka.stream.ActorMaterializer
 import akka.util.ByteString
 import $package$.configuration.Environment
 import com.typesafe.scalalogging.LazyLogging
+import scala.concurrent.ExecutionContext
+
 
 class Routes(actorSystem: ActorSystem,
-             actorMaterializer: ActorMaterializer,
              environment: Environment)
   extends LazyLogging {
 
-  implicit val ec = actorSystem
-  implicit val amaterializer = actorMaterializer
+  implicit val ec: ActorSystem = actorSystem
+  implicit val executionContext: ExecutionContext = actorSystem.dispatcher
 
-  var on: Boolean = true
-
+  val on: AtomicBoolean = new AtomicBoolean(true)
 
   val serviceRoutes: Route =
     pathSuffix("readinessProbe") {
       get {
-        if(on) {
+        if(on.get) {
           complete {
             HttpEntity(ContentTypes.`application/json`, ByteString($package$.BuildInfo.toJson))
           }
@@ -48,6 +49,6 @@ class Routes(actorSystem: ActorSystem,
 
   val rejectRoute: Route = reject
 
-  def shutdown(): Unit = on = false
+  def shutdown(): Unit = on.set(false)
 
 }

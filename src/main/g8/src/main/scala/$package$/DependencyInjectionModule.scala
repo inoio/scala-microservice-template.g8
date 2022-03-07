@@ -1,29 +1,22 @@
 package $package$
 
+import java.util.concurrent.ForkJoinPool
+
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import scala.concurrent.ExecutionContext
 import com.softwaremill.macwire._
-import fr.davit.akka.http.prometheus.scaladsl.server.HttpMetricsExports
-import fr.davit.akka.http.prometheus.scaladsl.server.settings.HttpMetricsSettings
 import $package$.configuration.{AkkaConfigurator, Environment}
+import $package$.logging.LogbackReconfigurator
 import $package$.logging.LoggingModule
-import io.prometheus.client.CollectorRegistry
 
 trait DependencyInjectionModule extends LoggingModule  {
+  val akkaConfigurator: AkkaConfigurator = wire[AkkaConfigurator]
+  akkaConfigurator.configure()
 
-  lazy val environment = wire[Environment]
+  lazy val environment: Environment = wire[Environment]
+  lazy val routes: Routes = wire[Routes]
 
-  lazy val routes = wire[Routes]
-  lazy val akkaConfigurator = wire[AkkaConfigurator]
+  implicit def actorSystem: ActorSystem
 
-  def actorSystem: ActorSystem
-  def actorMaterializer: ActorMaterializer
-
-  // the custom prometheus registry that you use in your app
-  val customCollectorRegistry = CollectorRegistry.defaultRegistry
-  val httpMetricsExports = new HttpMetricsExports {
-    override val registry = customCollectorRegistry
-  }
-  implicit val httpMetricsSettings = HttpMetricsSettings(
-    exports = httpMetricsExports)
+  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutor(new ForkJoinPool(8))
 }
